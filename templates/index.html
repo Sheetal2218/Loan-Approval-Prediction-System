@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Approval Predictor</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <div class="page">
+
+        <!-- Left Section -->
+        <div class="intro">
+            <div class="logo">💰</div>
+
+            <h1>Loan Approval<br><span>Prediction System</span></h1>
+
+            <p>
+                Check your loan approval probability using our
+                machine learning based prediction system.
+            </p>
+
+            <div class="features">
+                <div class="feature">
+                    <span>✓</span>
+                    <div>
+                        <strong>Instant Prediction</strong>
+                        <small>Get results within seconds</small>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <span>✓</span>
+                    <div>
+                        <strong>ML Powered</strong>
+                        <small>Prediction using trained ML model</small>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <span>✓</span>
+                    <div>
+                        <strong>Easy to Use</strong>
+                        <small>Enter your details and predict</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Prediction Card -->
+        <div class="container">
+
+            <div class="card-header">
+                <h2>Loan Details</h2>
+                <p>Enter your information to get a prediction</p>
+            </div>
+
+            <form id="loanForm">
+
+                <div class="form-grid">
+
+                    <div class="input-group">
+                        <label>Income (₹)</label>
+                        <input type="number" id="income" placeholder="e.g. 50000" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Loan Amount (₹)</label>
+                        <input type="number" id="loan_amount" placeholder="e.g. 100000" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Credit Score</label>
+                        <input type="number" id="credit_score" placeholder="e.g. 750" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Loan Term (months)</label>
+                        <input type="number" id="loan_term_months" placeholder="e.g. 60" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Dependents</label>
+                        <input type="number" id="dependents" placeholder="e.g. 2" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Employment (years)</label>
+                        <input type="number" id="employment_years" placeholder="e.g. 5" step="0.1" required>
+                    </div>
+
+                    <div class="input-group full">
+                        <label>Existing Loans</label>
+                        <input type="number" id="existing_loans" placeholder="e.g. 1" required>
+                    </div>
+
+                </div>
+
+                <button type="submit">
+                    Predict Loan Approval
+                    <span>→</span>
+                </button>
+
+            </form>
+
+            <div id="result"></div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        const form = document.getElementById("loanForm");
+        const resultBox = document.getElementById("result");
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            resultBox.className = "";
+            resultBox.innerText = "Analyzing your application...";
+
+            const payload = {
+                income: document.getElementById("income").value,
+                loan_amount: document.getElementById("loan_amount").value,
+                credit_score: document.getElementById("credit_score").value,
+                loan_term_months: document.getElementById("loan_term_months").value,
+                dependents: document.getElementById("dependents").value,
+                employment_years: document.getElementById("employment_years").value,
+                existing_loans: document.getElementById("existing_loans").value
+            };
+
+            try {
+
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.approved) {
+                    resultBox.className = "approved";
+                    resultBox.innerHTML =
+                        `✅ <strong>Loan Approved</strong><br>
+                         <span>Approval Probability: ${data.probability}%</span>`;
+                } else {
+                    resultBox.className = "rejected";
+                    resultBox.innerHTML =
+                        `❌ <strong>Loan Rejected</strong><br>
+                         <span>Approval Probability: ${data.probability}%</span>`;
+                }
+
+            } catch (error) {
+
+                resultBox.className = "error";
+                resultBox.innerText =
+                    "Something went wrong. Please try again.";
+
+            }
+        });
+    </script>
+
+</body>
+</html>
